@@ -10,7 +10,7 @@ const Wallet = () => {
   const disabled = status !== 'empty';
 
   return (
-    <div tw="space-y-2 max-w-xs">
+    <div tw="flex flex-wrap gap-4">
       <StyledLabel>
         <span>Source Account:</span>
         <StyledInput
@@ -47,7 +47,7 @@ const Wallet = () => {
   );
 };
 
-const StyledLabel = tw.label`flex gap-2 flex-wrap items-center`;
-const StyledInput = tw.input`ml-auto p-1 bg-gray-100 border-2 border-gray-200 rounded disabled:(bg-gray-200 cursor-not-allowed)`;
+const StyledLabel = tw.label`[span]:(block mb-1) flex-1 min-width[20ch]`;
+const StyledInput = tw.input`w-full px-2 py-1 bg-dark rounded disabled:(bg-black bg-opacity-20 cursor-not-allowed)`;
 
 export default Wallet;

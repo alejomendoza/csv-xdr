@@ -11,6 +11,7 @@ import {
   xdrListAtom,
 } from 'src/utils/atoms';
 import { generateXdr } from 'src/utils/utils';
+import Progress from './Progress';
 
 const FileUpload = () => {
   const setAccountList = useSetRecoilState(accountListAtom);
@@ -60,24 +61,28 @@ const FileUpload = () => {
   };
 
   return (
-    <label tw="block">
-      <input
-        type="file"
-        multiple={false}
-        accept=".csv"
-        onChange={parseFile}
-        tw="hidden invisible opacity-0 disabled:sibling:(cursor-not-allowed bg-gray-300) not-disabled:sibling:hover:bg-gray-300"
-        disabled={
-          isLoading || !!file || !StrKey.isValidEd25519PublicKey(publicKey)
-        }
-      />
-      <StyledFileUpload>
-        {isLoading ? '✋ Loading' : !!file ? '✔️ Uploaded' : '🗂️ Upload'}
-      </StyledFileUpload>
-    </label>
+    <div tw="space-y-2">
+      <label tw="block">
+        <input
+          type="file"
+          multiple={false}
+          accept=".csv"
+          onChange={parseFile}
+          tw="hidden invisible opacity-0 disabled:sibling:(cursor-not-allowed bg-black bg-opacity-20)"
+          disabled={
+            isLoading || !!file || !StrKey.isValidEd25519PublicKey(publicKey)
+          }
+        />
+        <StyledFileUpload>
+          {isLoading ? '✋ Loading' : !!file ? '✔️ Uploaded' : '🗂️ Upload'}
+        </StyledFileUpload>
+      </label>
+
+      <Progress />
+    </div>
   );
 };
 
-const StyledFileUpload = tw.p`flex items-center justify-center p-4 cursor-pointer rounded font-bold bg-gray-200 border-2 border-gray-300 transition-colors`;
+const StyledFileUpload = tw.p`flex items-center justify-center p-4 cursor-pointer rounded font-bold bg-secondary transition-colors`;
 
 export default FileUpload;

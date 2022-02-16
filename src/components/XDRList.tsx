@@ -12,12 +12,11 @@ const XDRList = () => {
 
   return (
     <div>
-      <h1 tw="flex gap-2 items-center text-2xl font-bold mb-2">
-        <span>XDR List:</span>
-        {status === 'loading' && <SVGSpinner />}
-      </h1>
-
-      {status === 'empty' && <p>Please upload a CSV file to begin.</p>}
+      {status === 'empty' ? (
+        <p>Please upload a CSV file to begin.</p>
+      ) : (
+        status === 'loading' && <SVGSpinner />
+      )}
 
       {xdrList.length > 0 && (
         <div tw="w-full space-y-8">
@@ -27,18 +26,22 @@ const XDRList = () => {
             return (
               <div key={`${index}-${xdr}`}>
                 <textarea
-                  tw="w-full p-2 bg-gray-100"
+                  tw="w-full rounded-md p-2 bg-dark"
                   rows={4}
                   value={xdr}
                   readOnly
                 />
-                <div tw="flex items-center gap-8 font-mono">
-                  <p>{`Ops: ${operations.length}`}</p>
-                  <p>{`Seq: ${sequence}`}</p>
-                  <p>{`Fee: ${fee}`}</p>
+                <div tw="flex items-center gap-2 font-mono flex-wrap">
+                  <div tw="flex gap-8">
+                    <p>{`Ops: ${operations.length}`}</p>
+                    <p>{`Seq: ...${sequence.substring(
+                      sequence.length - 4
+                    )}`}</p>
+                    <p>{`Fee: ${fee}`}</p>
+                  </div>
 
                   <button
-                    tw="block bg-gray-100 px-4 py-2 rounded ml-auto hover:bg-gray-200 active:bg-gray-300 transition-colors"
+                    tw="block bg-secondary px-4 py-2 rounded ml-auto active:bg-opacity-90 transition-colors"
                     onClick={() => copyText(xdr)}
                   >
                     Copy

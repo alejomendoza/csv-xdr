@@ -1,11 +1,11 @@
 import ReactDOM from 'react-dom';
 import { RecoilRoot } from 'recoil';
-import { GlobalStyles } from 'twin.macro';
 
 import './utils/polyfills';
 import App from './App';
 
 import './index.css';
+import GlobalStyles from './styles/GlobalStyles';
 
 ReactDOM.render(
   <RecoilRoot>
