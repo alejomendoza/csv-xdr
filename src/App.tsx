@@ -13,15 +13,19 @@ function App() {
         <StyledTitle tw="text-center">Required CSV Format</StyledTitle>
 
         <table tw="w-1/2 mx-auto rounded-md overflow-hidden bg-black bg-opacity-20">
-          <tr tw="all-child:p-2 bg-dark">
-            <th scope="col">publicKey</th>
-          </tr>
-
-          {Array.from({ length: 3 }, () => (
-            <tr tw="odd:bg-dark">
-              <td tw="text-center">G...</td>
+          <thead>
+            <tr tw="all-child:p-2 bg-dark">
+              <th scope="col">publicKey</th>
             </tr>
-          ))}
+          </thead>
+
+          <tbody>
+            {Array.from({ length: 3 }, (_, index) => (
+              <tr key={index} tw="even:bg-dark">
+                <td tw="text-center">G...</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </StyledSection>
 
