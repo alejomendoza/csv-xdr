@@ -39,7 +39,7 @@ export const getAccount = async (horizonUrl: string, publicKey: string) => {
 };
 
 export const getFee = () => {
-  return fetch(HORIZON_URL + `/fee`)
+  return fetch(HORIZON_URL + `/fee_stats`)
     .then(handleResponse)
     .then((feeStats) => feeStats.fee_charged.max)
     .catch(() => '100000');
