@@ -7,14 +7,24 @@ import {
   TransactionBuilder,
 } from 'stellar-base';
 
-export const NETWORK = Networks['PUBLIC'];
-export const HORIZON_URL = 'https://horizon.stellar.org';
+const network = import.meta.env.VITE_STELLAR_NETWORK;
 
-const horizonEndpoints = [
-  'https://horizon.stellar.org',
-  'https://horizon.stellar.lobstr.co',
-  'https://horizon.publicnode.org',
-];
+export const NETWORK =
+  network === 'testnet' ? Networks['TESTNET'] : Networks['PUBLIC'];
+
+export const HORIZON_URL =
+  network === 'testnet'
+    ? 'https://horizon-testnet.stellar.org'
+    : 'https://horizon.stellar.org';
+
+const horizonEndpoints =
+  network === 'testnet'
+    ? ['https://horizon-testnet.stellar.org']
+    : [
+        'https://horizon.stellar.org',
+        'https://horizon.stellar.lobstr.co',
+        'https://horizon.publicnode.org',
+      ];
 
 export function copyText(text: string) {
   clipboard.writeText(text);
