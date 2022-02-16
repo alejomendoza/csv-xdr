@@ -10,6 +10,22 @@ function App() {
       <h1 tw="text-3xl font-bold text-center">CSV to XDR</h1>
 
       <StyledSection>
+        <StyledTitle tw="text-center">Required CSV Format</StyledTitle>
+
+        <table tw="w-1/2 mx-auto rounded-md overflow-hidden bg-black bg-opacity-20">
+          <tr tw="all-child:p-2 bg-dark">
+            <th scope="col">publicKey</th>
+          </tr>
+
+          {Array.from({ length: 3 }, () => (
+            <tr tw="odd:bg-dark">
+              <td tw="text-center">G...</td>
+            </tr>
+          ))}
+        </table>
+      </StyledSection>
+
+      <StyledSection>
         <StyledTitle>1. Settings</StyledTitle>
         <Wallet />
       </StyledSection>
