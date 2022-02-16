@@ -1,15 +1,14 @@
 import * as clipboard from 'clipboard-polyfill/text';
 import {
+  Account,
   Asset,
   Networks,
   Operation,
-  Server,
   TransactionBuilder,
-} from 'stellar-sdk';
+} from 'stellar-base';
 
 export const NETWORK = Networks['PUBLIC'];
 export const HORIZON_URL = 'https://horizon.stellar.org';
-export const server = new Server(HORIZON_URL);
 
 const horizonEndpoints = [
   'https://horizon.stellar.org',
@@ -21,9 +20,27 @@ export function copyText(text: string) {
   clipboard.writeText(text);
 }
 
+export async function handleResponse(response: Response) {
+  const { headers, ok } = response;
+  const contentType = headers.get('content-type');
+
+  const content = contentType
+    ? contentType.includes('json')
+      ? response.json()
+      : response.text()
+    : { status: response.status, message: response.statusText };
+
+  if (ok) return content;
+  else throw await content;
+}
+
+export const getAccount = async (horizonUrl: string, publicKey: string) => {
+  return fetch(horizonUrl + `/accounts/${publicKey}`).then(handleResponse);
+};
+
 export const getFee = () => {
-  return server
-    .feeStats()
+  return fetch(HORIZON_URL + `/fee`)
+    .then(handleResponse)
     .then((feeStats) => feeStats.fee_charged.max)
     .catch(() => '100000');
 };
@@ -33,9 +50,8 @@ export async function* generateXdr(
   amount: string,
   accountList: { publicKey: string }[]
 ) {
-  let server = new Server(HORIZON_URL);
-
-  const account = await server.loadAccount(source);
+  const accountInfo = await getAccount(HORIZON_URL, source);
+  const account = new Account(accountInfo.id, accountInfo.sequence);
 
   let transactionBuilder = new TransactionBuilder(account, {
     fee: await getFee(),
@@ -43,14 +59,9 @@ export async function* generateXdr(
   });
 
   for (let i = 0; i < accountList.length; i++) {
-    server = new Server(horizonEndpoints[i % horizonEndpoints.length]);
-
     const destination = accountList[i].publicKey;
 
-    await server
-      .accounts()
-      .accountId(destination)
-      .call()
+    await getAccount(horizonEndpoints[i % horizonEndpoints.length], destination)
       .then(() => {
         transactionBuilder.addOperation(
           Operation.payment({

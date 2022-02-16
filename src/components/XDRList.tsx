@@ -1,7 +1,7 @@
 import { useRecoilValue } from 'recoil';
 import { progressSelector, xdrListAtom } from 'src/utils/atoms';
 import { copyText, NETWORK } from 'src/utils/utils';
-import { Transaction } from 'stellar-sdk';
+import { Transaction } from 'stellar-base';
 import 'twin.macro';
 
 import SVGSpinner from './SVGSpinner';

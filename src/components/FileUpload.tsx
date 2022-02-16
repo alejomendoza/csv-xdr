@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { parse } from 'papaparse';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { StrKey } from 'stellar-sdk';
+import { StrKey } from 'stellar-base';
 import tw from 'twin.macro';
 
 import {
