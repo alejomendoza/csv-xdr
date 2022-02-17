@@ -13,8 +13,9 @@ export const accountListAtom = atom<{ publicKey: string }[]>({
 export const xdrListAtom = atom<string[]>({ key: 'xdrList', default: [] });
 
 export const progressAtom = atom<{
-  status: 'empty' | 'loading' | 'complete';
+  status: 'empty' | 'loading' | 'complete' | 'error';
   amountComplete: number;
+  error?: any;
 }>({
   key: 'progressAtom',
   default: {

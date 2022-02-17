@@ -10,10 +10,11 @@ import {
   settingsAtom,
   xdrListAtom,
 } from 'src/utils/atoms';
-import { generateXdr } from 'src/utils/utils';
+import { generateXdr, parseError } from 'src/utils/utils';
 import Progress from './Progress';
 
 const FileUpload = () => {
+  const [invalidRows, setInvalidRows] = useState<{ row: number }[]>([]);
   const setAccountList = useSetRecoilState(accountListAtom);
   const setXdrList = useSetRecoilState(xdrListAtom);
   const setProgress = useSetRecoilState(progressAtom);
@@ -41,19 +42,31 @@ const FileUpload = () => {
     });
 
     const csvData = parse(csvText, { header: true }) as any;
+
     setAccountList(csvData.data);
     setIsLoading(false);
 
     setProgress((oldState) => ({ ...oldState, status: 'loading' }));
 
     let generator = generateXdr(publicKey, amount, csvData.data);
+    try {
+      for await (let { xdr, amountComplete, isInvalid } of generator) {
+        if (xdr) setXdrList((oldState) => [...oldState, xdr!]);
 
-    for await (let { xdr, amountComplete } of generator) {
-      if (xdr) setXdrList((oldState) => [...oldState, xdr!]);
+        if (isInvalid) {
+          setInvalidRows((oldState) => [...oldState, { row: amountComplete }]);
+        }
 
+        setProgress((oldState) => ({
+          ...oldState,
+          amountComplete,
+        }));
+      }
+    } catch (e) {
       setProgress((oldState) => ({
         ...oldState,
-        amountComplete,
+        status: 'error',
+        error: parseError(e),
       }));
     }
 
@@ -79,6 +92,17 @@ const FileUpload = () => {
       </label>
 
       <Progress />
+
+      {invalidRows.length > 0 && (
+        <div>
+          <p>Invalid key found in row:</p>
+          <ul tw="flex flex-wrap gap-4">
+            {invalidRows.map(({ row }) => (
+              <li key={row}>{row}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

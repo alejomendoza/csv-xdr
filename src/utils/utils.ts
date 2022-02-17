@@ -5,6 +5,7 @@ import {
   Networks,
   Operation,
   TransactionBuilder,
+  StrKey,
 } from 'stellar-base';
 
 const network = import.meta.env.VITE_STELLAR_NETWORK;
@@ -44,6 +45,14 @@ export async function handleResponse(response: Response) {
   else throw await content;
 }
 
+export const parseError = (error: any) => {
+  if (error instanceof Error) error = error.toString();
+
+  return {
+    ...(typeof error === 'string' ? { message: error } : error),
+  };
+};
+
 export const getAccount = async (horizonUrl: string, publicKey: string) => {
   return fetch(horizonUrl + `/accounts/${publicKey}`).then(handleResponse);
 };
@@ -71,21 +80,34 @@ export async function* generateXdr(
   for (let i = 0; i < accountList.length; i++) {
     const destination = accountList[i].publicKey;
 
-    await getAccount(horizonEndpoints[i % horizonEndpoints.length], destination)
-      .then(() => {
-        transactionBuilder.addOperation(
-          Operation.payment({
-            amount,
-            destination,
-            asset: Asset.native(),
-          })
-        );
-      })
-      .catch(() => {
-        transactionBuilder.addOperation(
-          Operation.createAccount({ destination, startingBalance: amount })
-        );
-      });
+    const iterationYield = {
+      amountComplete: i + 1,
+      isInvalid: false,
+      xdr: '',
+    };
+
+    if (!StrKey.isValidEd25519PublicKey(destination)) {
+      iterationYield.isInvalid = true;
+    } else {
+      await getAccount(
+        horizonEndpoints[i % horizonEndpoints.length],
+        destination
+      )
+        .then(() => {
+          transactionBuilder.addOperation(
+            Operation.payment({
+              amount,
+              destination,
+              asset: Asset.native(),
+            })
+          );
+        })
+        .catch(() => {
+          transactionBuilder.addOperation(
+            Operation.createAccount({ destination, startingBalance: amount })
+          );
+        });
+    }
 
     if ((i + 1) % 100 === 0 || i === accountList.length - 1) {
       const xdr = transactionBuilder.setTimeout(0).build().toXDR();
@@ -97,12 +119,13 @@ export async function* generateXdr(
         networkPassphrase: NETWORK,
       });
 
-      yield { amountComplete: i + 1, xdr };
+      iterationYield.xdr = xdr;
     }
 
-    yield { amountComplete: i + 1 };
     await new Promise((resolve) =>
       setTimeout(() => resolve(i), 1000 / horizonEndpoints.length)
     );
+
+    yield iterationYield;
   }
 }
