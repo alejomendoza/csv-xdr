@@ -5,26 +5,27 @@ import {
   Networks,
   Operation,
   TransactionBuilder,
+  StrKey,
 } from 'stellar-base';
 
-const network = import.meta.env.VITE_STELLAR_NETWORK;
-
-export const NETWORK =
-  network === 'testnet' ? Networks['TESTNET'] : Networks['PUBLIC'];
-
-export const HORIZON_URL =
-  network === 'testnet'
-    ? 'https://horizon-testnet.stellar.org'
-    : 'https://horizon.stellar.org';
-
-const horizonEndpoints =
-  network === 'testnet'
-    ? ['https://horizon-testnet.stellar.org']
-    : [
-        'https://horizon.stellar.org',
-        'https://horizon.stellar.lobstr.co',
-        'https://horizon.publicnode.org',
-      ];
+export const getHorizonConfig = (isTestnet: boolean) => {
+  if (isTestnet) {
+    return {
+      network: Networks['TESTNET'],
+      horizonUrl: 'https://horizon-testnet.stellar.org',
+      horizonEndpoints: ['https://horizon-testnet.stellar.org'],
+    };
+  }
+  return {
+    network: Networks['PUBLIC'],
+    horizonUrl: 'https://horizon.stellar.org',
+    horizonEndpoints: [
+      'https://horizon.stellar.org',
+      'https://horizon.stellar.lobstr.co',
+      'https://horizon.publicnode.org',
+    ],
+  };
+};
 
 export function copyText(text: string) {
   clipboard.writeText(text);
@@ -44,12 +45,20 @@ export async function handleResponse(response: Response) {
   else throw await content;
 }
 
+export const parseError = (error: any) => {
+  if (error instanceof Error) error = error.toString();
+
+  return {
+    ...(typeof error === 'string' ? { message: error } : error),
+  };
+};
+
 export const getAccount = async (horizonUrl: string, publicKey: string) => {
   return fetch(horizonUrl + `/accounts/${publicKey}`).then(handleResponse);
 };
 
-export const getFee = () => {
-  return fetch(HORIZON_URL + `/fee_stats`)
+export const getFee = (horizonUrl: string) => {
+  return fetch(horizonUrl + `/fee_stats`)
     .then(handleResponse)
     .then((feeStats) => feeStats.fee_charged.max)
     .catch(() => '100000');
@@ -58,34 +67,50 @@ export const getFee = () => {
 export async function* generateXdr(
   source: string,
   amount: string,
-  accountList: { publicKey: string }[]
+  accountList: { publicKey: string }[],
+  isTestnet: boolean
 ) {
-  const accountInfo = await getAccount(HORIZON_URL, source);
+  const { network, horizonUrl, horizonEndpoints } = getHorizonConfig(isTestnet);
+
+  const accountInfo = await getAccount(horizonUrl, source);
   const account = new Account(accountInfo.id, accountInfo.sequence);
 
   let transactionBuilder = new TransactionBuilder(account, {
-    fee: await getFee(),
-    networkPassphrase: NETWORK,
+    fee: await getFee(horizonUrl),
+    networkPassphrase: network,
   });
 
   for (let i = 0; i < accountList.length; i++) {
     const destination = accountList[i].publicKey;
 
-    await getAccount(horizonEndpoints[i % horizonEndpoints.length], destination)
-      .then(() => {
-        transactionBuilder.addOperation(
-          Operation.payment({
-            amount,
-            destination,
-            asset: Asset.native(),
-          })
-        );
-      })
-      .catch(() => {
-        transactionBuilder.addOperation(
-          Operation.createAccount({ destination, startingBalance: amount })
-        );
-      });
+    const iterationYield = {
+      amountComplete: i + 1,
+      isInvalid: false,
+      xdr: '',
+    };
+
+    if (!StrKey.isValidEd25519PublicKey(destination)) {
+      iterationYield.isInvalid = true;
+    } else {
+      await getAccount(
+        horizonEndpoints[i % horizonEndpoints.length],
+        destination
+      )
+        .then(() => {
+          transactionBuilder.addOperation(
+            Operation.payment({
+              amount,
+              destination,
+              asset: Asset.native(),
+            })
+          );
+        })
+        .catch(() => {
+          transactionBuilder.addOperation(
+            Operation.createAccount({ destination, startingBalance: amount })
+          );
+        });
+    }
 
     if ((i + 1) % 100 === 0 || i === accountList.length - 1) {
       const xdr = transactionBuilder.setTimeout(0).build().toXDR();
@@ -93,16 +118,17 @@ export async function* generateXdr(
       account.incrementSequenceNumber();
 
       transactionBuilder = new TransactionBuilder(account, {
-        fee: await getFee(),
-        networkPassphrase: NETWORK,
+        fee: await getFee(horizonUrl),
+        networkPassphrase: network,
       });
 
-      yield { amountComplete: i + 1, xdr };
+      iterationYield.xdr = xdr;
     }
 
-    yield { amountComplete: i + 1 };
     await new Promise((resolve) =>
       setTimeout(() => resolve(i), 1000 / horizonEndpoints.length)
     );
+
+    yield iterationYield;
   }
 }

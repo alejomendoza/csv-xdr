@@ -1,38 +1,27 @@
 import { useState } from 'react';
 import { parse } from 'papaparse';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { StrKey } from 'stellar-base';
+import { useSetRecoilState } from 'recoil';
 import tw from 'twin.macro';
 
-import {
-  accountListAtom,
-  progressAtom,
-  settingsAtom,
-  xdrListAtom,
-} from 'src/utils/atoms';
-import { generateXdr } from 'src/utils/utils';
-import Progress from './Progress';
+import { accountListAtom } from 'src/utils/atoms';
 
 const FileUpload = () => {
-  const setAccountList = useSetRecoilState(accountListAtom);
-  const setXdrList = useSetRecoilState(xdrListAtom);
-  const setProgress = useSetRecoilState(progressAtom);
-
-  const { publicKey, amount } = useRecoilValue(settingsAtom);
-
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File>();
+
+  const setAccountList = useSetRecoilState(accountListAtom);
 
   const parseFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     setIsLoading(true);
+
     const csvFile = e.target.files?.[0];
     if (!csvFile) return;
 
     setFile(csvFile);
-    const reader = new FileReader();
 
+    const reader = new FileReader();
     const csvText = await new Promise<any>((resolve) => {
       reader.onload = (e) => {
         resolve(e.target?.result);
@@ -41,23 +30,9 @@ const FileUpload = () => {
     });
 
     const csvData = parse(csvText, { header: true }) as any;
+
     setAccountList(csvData.data);
     setIsLoading(false);
-
-    setProgress((oldState) => ({ ...oldState, status: 'loading' }));
-
-    let generator = generateXdr(publicKey, amount, csvData.data);
-
-    for await (let { xdr, amountComplete } of generator) {
-      if (xdr) setXdrList((oldState) => [...oldState, xdr!]);
-
-      setProgress((oldState) => ({
-        ...oldState,
-        amountComplete,
-      }));
-    }
-
-    setProgress((oldState) => ({ ...oldState, status: 'complete' }));
   };
 
   return (
@@ -69,16 +44,12 @@ const FileUpload = () => {
           accept=".csv"
           onChange={parseFile}
           tw="hidden invisible opacity-0 disabled:sibling:(cursor-not-allowed bg-black bg-opacity-20)"
-          disabled={
-            isLoading || !!file || !StrKey.isValidEd25519PublicKey(publicKey)
-          }
+          disabled={isLoading || !!file}
         />
         <StyledFileUpload>
           {isLoading ? '✋ Loading' : !!file ? '✔️ Uploaded' : '🗂️ Upload'}
         </StyledFileUpload>
       </label>
-
-      <Progress />
     </div>
   );
 };
