@@ -16,7 +16,7 @@ const XDRList = () => {
   return (
     <div>
       {status === 'empty' ? (
-        <p>Please upload a CSV file to begin.</p>
+        <p>Please upload a CSV file and run to begin.</p>
       ) : (
         status === 'loading' && <SVGSpinner />
       )}

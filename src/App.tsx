@@ -51,7 +51,7 @@ function App() {
       </StyledSection>
 
       <StyledSection>
-        <StyledTitle tw="mb-4">3. XDR List</StyledTitle>
+        <StyledTitle tw="mb-4">XDR List</StyledTitle>
         <XDRList />
       </StyledSection>
     </div>
