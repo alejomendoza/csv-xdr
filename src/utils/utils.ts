@@ -8,24 +8,24 @@ import {
   StrKey,
 } from 'stellar-base';
 
-const network = import.meta.env.VITE_STELLAR_NETWORK;
-
-export const NETWORK =
-  network === 'testnet' ? Networks['TESTNET'] : Networks['PUBLIC'];
-
-export const HORIZON_URL =
-  network === 'testnet'
-    ? 'https://horizon-testnet.stellar.org'
-    : 'https://horizon.stellar.org';
-
-const horizonEndpoints =
-  network === 'testnet'
-    ? ['https://horizon-testnet.stellar.org']
-    : [
-        'https://horizon.stellar.org',
-        'https://horizon.stellar.lobstr.co',
-        'https://horizon.publicnode.org',
-      ];
+export const getHorizonConfig = (isTestnet: boolean) => {
+  if (isTestnet) {
+    return {
+      network: Networks['TESTNET'],
+      horizonUrl: 'https://horizon-testnet.stellar.org',
+      horizonEndpoints: ['https://horizon-testnet.stellar.org'],
+    };
+  }
+  return {
+    network: Networks['PUBLIC'],
+    horizonUrl: 'https://horizon.stellar.org',
+    horizonEndpoints: [
+      'https://horizon.stellar.org',
+      'https://horizon.stellar.lobstr.co',
+      'https://horizon.publicnode.org',
+    ],
+  };
+};
 
 export function copyText(text: string) {
   clipboard.writeText(text);
@@ -57,8 +57,8 @@ export const getAccount = async (horizonUrl: string, publicKey: string) => {
   return fetch(horizonUrl + `/accounts/${publicKey}`).then(handleResponse);
 };
 
-export const getFee = () => {
-  return fetch(HORIZON_URL + `/fee_stats`)
+export const getFee = (horizonUrl: string) => {
+  return fetch(horizonUrl + `/fee_stats`)
     .then(handleResponse)
     .then((feeStats) => feeStats.fee_charged.max)
     .catch(() => '100000');
@@ -67,14 +67,17 @@ export const getFee = () => {
 export async function* generateXdr(
   source: string,
   amount: string,
-  accountList: { publicKey: string }[]
+  accountList: { publicKey: string }[],
+  isTestnet: boolean
 ) {
-  const accountInfo = await getAccount(HORIZON_URL, source);
+  const { network, horizonUrl, horizonEndpoints } = getHorizonConfig(isTestnet);
+
+  const accountInfo = await getAccount(horizonUrl, source);
   const account = new Account(accountInfo.id, accountInfo.sequence);
 
   let transactionBuilder = new TransactionBuilder(account, {
-    fee: await getFee(),
-    networkPassphrase: NETWORK,
+    fee: await getFee(horizonUrl),
+    networkPassphrase: network,
   });
 
   for (let i = 0; i < accountList.length; i++) {
@@ -115,8 +118,8 @@ export async function* generateXdr(
       account.incrementSequenceNumber();
 
       transactionBuilder = new TransactionBuilder(account, {
-        fee: await getFee(),
-        networkPassphrase: NETWORK,
+        fee: await getFee(horizonUrl),
+        networkPassphrase: network,
       });
 
       iterationYield.xdr = xdr;

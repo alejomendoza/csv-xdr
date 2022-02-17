@@ -2,7 +2,7 @@ import { atom, selector } from 'recoil';
 
 export const settingsAtom = atom({
   key: 'settings',
-  default: { publicKey: '', amount: '0' },
+  default: { publicKey: '', amount: '0', isTestnet: true, disabled: false },
 });
 
 export const accountListAtom = atom<{ publicKey: string }[]>({

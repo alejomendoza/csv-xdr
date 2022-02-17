@@ -3,6 +3,8 @@ import tw from 'twin.macro';
 import Wallet from 'src/components/Wallet';
 import FileUpload from 'src/components/FileUpload';
 import XDRList from 'src/components/XDRList';
+import NetworkSwitch from './components/NetworkSwitch';
+import Run from './components/Run';
 
 function App() {
   return (
@@ -30,6 +32,10 @@ function App() {
       </StyledSection>
 
       <StyledSection>
+        <NetworkSwitch />
+      </StyledSection>
+
+      <StyledSection>
         <StyledTitle>1. Settings</StyledTitle>
         <Wallet />
       </StyledSection>
@@ -37,6 +43,11 @@ function App() {
       <StyledSection>
         <StyledTitle>2. Upload</StyledTitle>
         <FileUpload />
+      </StyledSection>
+
+      <StyledSection>
+        <StyledTitle>3. Run</StyledTitle>
+        <Run />
       </StyledSection>
 
       <StyledSection>

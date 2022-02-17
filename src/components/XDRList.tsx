@@ -1,6 +1,6 @@
 import { useRecoilValue } from 'recoil';
-import { progressSelector, xdrListAtom } from 'src/utils/atoms';
-import { copyText, NETWORK } from 'src/utils/utils';
+import { progressSelector, settingsAtom, xdrListAtom } from 'src/utils/atoms';
+import { copyText, getHorizonConfig } from 'src/utils/utils';
 import { Transaction } from 'stellar-base';
 import 'twin.macro';
 
@@ -9,6 +9,9 @@ import SVGSpinner from './SVGSpinner';
 const XDRList = () => {
   const xdrList = useRecoilValue(xdrListAtom);
   const status = useRecoilValue(progressSelector);
+  const { isTestnet } = useRecoilValue(settingsAtom);
+
+  const { network } = getHorizonConfig(isTestnet);
 
   return (
     <div>
@@ -21,7 +24,7 @@ const XDRList = () => {
       {xdrList.length > 0 && (
         <div tw="w-full space-y-8">
           {xdrList.map((xdr, index) => {
-            const { operations, sequence, fee } = new Transaction(xdr, NETWORK);
+            const { operations, sequence, fee } = new Transaction(xdr, network);
 
             return (
               <div key={`${index}-${xdr}`}>

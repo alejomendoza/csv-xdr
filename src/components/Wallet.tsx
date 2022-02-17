@@ -1,13 +1,11 @@
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import tw from 'twin.macro';
 
-import { settingsAtom, progressSelector } from 'src/utils/atoms';
+import { settingsAtom } from 'src/utils/atoms';
 
 const Wallet = () => {
-  const [{ amount, publicKey }, setSettings] = useRecoilState(settingsAtom);
-  const status = useRecoilValue(progressSelector);
-
-  const disabled = status !== 'empty';
+  const [{ amount, publicKey, disabled }, setSettings] =
+    useRecoilState(settingsAtom);
 
   return (
     <div tw="flex flex-wrap gap-4">
