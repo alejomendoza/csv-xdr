@@ -11,8 +11,8 @@ function App() {
     <div tw="text-white mx-auto max-w-3xl space-y-6 p-6">
       <h1 tw="text-3xl font-bold text-center">CSV to XDR</h1>
 
-      <StyledSection>
-        <StyledTitle tw="text-center">Required CSV Format</StyledTitle>
+      <StyledSection tw="flex flex-col items-center">
+        <StyledTitle>Required CSV Format</StyledTitle>
 
         <table tw="w-1/2 mx-auto rounded-md overflow-hidden bg-black bg-opacity-20">
           <thead>
@@ -29,20 +29,21 @@ function App() {
             ))}
           </tbody>
         </table>
+
+        <a tw="inline-block cursor-pointer" href="./example.csv">
+          ⬇️ Download Example
+        </a>
       </StyledSection>
 
       <StyledSection>
-        <NetworkSwitch />
-      </StyledSection>
-
-      <StyledSection>
-        <StyledTitle>1. Settings</StyledTitle>
-        <Wallet />
-      </StyledSection>
-
-      <StyledSection>
-        <StyledTitle>2. Upload</StyledTitle>
+        <StyledTitle>1. Upload</StyledTitle>
         <FileUpload />
+      </StyledSection>
+
+      <StyledSection>
+        <StyledTitle>2. Settings</StyledTitle>
+        <NetworkSwitch />
+        <Wallet />
       </StyledSection>
 
       <StyledSection>
@@ -58,7 +59,7 @@ function App() {
   );
 }
 
-const StyledSection = tw.section`bg-black bg-opacity-20 p-4 rounded-lg`;
-const StyledTitle = tw.h2`font-bold text-lg mb-2`;
+const StyledSection = tw.section`bg-black bg-opacity-20 p-4 rounded-lg space-y-2`;
+const StyledTitle = tw.h2`font-bold text-lg`;
 
 export default App;
