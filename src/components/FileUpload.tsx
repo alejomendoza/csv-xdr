@@ -63,7 +63,7 @@ const FileUpload = () => {
 
       {(invalid.length > 0 || duplicate.length > 0) && (
         <div tw="space-y-2">
-          <p tw="w-full text-center font-bold">Rows removed for you:</p>
+          <p tw="w-full text-center font-bold">Keys removed for you:</p>
 
           {invalid.length > 0 && (
             <div>
