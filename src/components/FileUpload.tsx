@@ -46,7 +46,7 @@ const FileUpload = () => {
   };
 
   return (
-    <div tw="space-y-2">
+    <div tw="space-y-4">
       <label tw="block">
         <input
           type="file"
@@ -60,28 +60,34 @@ const FileUpload = () => {
           {isLoading ? '✋ Loading' : !!file ? '✔️ Uploaded' : '🗂️ Upload'}
         </StyledFileUpload>
       </label>
-      <div tw="space-y-2">
-        {invalid.length > 0 && (
-          <div>
-            <p>Invalid key found in row:</p>
-            <StyledList>
-              {invalid.map((row) => (
-                <li key={row}>{row + 2}</li>
-              ))}
-            </StyledList>
-          </div>
-        )}
-        {duplicate.length > 0 && (
-          <div>
-            <p>Duplicate key found in row:</p>
-            <StyledList>
-              {duplicate.map((row) => (
-                <li key={row}>{row + 2}</li>
-              ))}
-            </StyledList>
-          </div>
-        )}
-      </div>
+
+      {(invalid.length > 0 || duplicate.length > 0) && (
+        <div tw="space-y-2">
+          <p tw="w-full text-center font-bold">Rows removed for you:</p>
+
+          {invalid.length > 0 && (
+            <div>
+              <p>Invalid key found in row:</p>
+              <StyledList>
+                {invalid.map((row) => (
+                  <li key={row}>{row + 2}</li>
+                ))}
+              </StyledList>
+            </div>
+          )}
+
+          {duplicate.length > 0 && (
+            <div>
+              <p>Duplicate key found in row:</p>
+              <StyledList>
+                {duplicate.map((row) => (
+                  <li key={row}>{row + 2}</li>
+                ))}
+              </StyledList>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
