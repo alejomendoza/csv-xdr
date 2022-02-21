@@ -1,4 +1,6 @@
 import tw from 'twin.macro';
+import { Keypair } from 'stellar-base';
+import { unparse } from 'papaparse';
 
 import Wallet from 'src/components/Wallet';
 import FileUpload from 'src/components/FileUpload';
@@ -30,9 +32,12 @@ function App() {
           </tbody>
         </table>
 
-        <a tw="inline-block cursor-pointer" href="./example.csv">
-          ⬇️ Download Example
-        </a>
+        <button
+          tw="inline-block cursor-pointer"
+          onClick={() => generateExample(10)}
+        >
+          ⬇️ Generate Example
+        </button>
       </StyledSection>
 
       <StyledSection>
@@ -61,5 +66,24 @@ function App() {
 
 const StyledSection = tw.section`bg-black bg-opacity-20 p-4 rounded-lg space-y-2`;
 const StyledTitle = tw.h2`font-bold text-lg`;
+
+const generateExample = (amount: number) => {
+  const example = Array.from({ length: amount }, () => ({
+    publicKey: Keypair.random().publicKey(),
+  }));
+
+  const csv = unparse(JSON.stringify(example) as any);
+
+  const blob = new Blob([csv]);
+  const blobUrl = URL.createObjectURL(blob);
+
+  const anchor = document.createElement('a');
+  anchor.href = blobUrl;
+  anchor.download = 'example.csv';
+
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+};
 
 export default App;

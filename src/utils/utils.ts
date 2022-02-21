@@ -85,32 +85,24 @@ export async function* generateXdr(
 
     const iterationYield = {
       amountComplete: i + 1,
-      isInvalid: false,
       xdr: '',
     };
 
-    if (!StrKey.isValidEd25519PublicKey(destination)) {
-      iterationYield.isInvalid = true;
-    } else {
-      await getAccount(
-        horizonEndpoints[i % horizonEndpoints.length],
-        destination
-      )
-        .then(() => {
-          transactionBuilder.addOperation(
-            Operation.payment({
-              amount,
-              destination,
-              asset: Asset.native(),
-            })
-          );
-        })
-        .catch(() => {
-          transactionBuilder.addOperation(
-            Operation.createAccount({ destination, startingBalance: amount })
-          );
-        });
-    }
+    await getAccount(horizonEndpoints[i % horizonEndpoints.length], destination)
+      .then(() => {
+        transactionBuilder.addOperation(
+          Operation.payment({
+            amount,
+            destination,
+            asset: Asset.native(),
+          })
+        );
+      })
+      .catch(() => {
+        transactionBuilder.addOperation(
+          Operation.createAccount({ destination, startingBalance: amount })
+        );
+      });
 
     if ((i + 1) % 100 === 0 || i === accountList.length - 1) {
       const xdr = transactionBuilder.setTimeout(0).build().toXDR();

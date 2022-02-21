@@ -1,11 +1,13 @@
 import { atom, selector } from 'recoil';
 
+export type AccountType = { publicKey: string };
+
 export const settingsAtom = atom({
   key: 'settings',
   default: { publicKey: '', amount: '0', isTestnet: true, disabled: false },
 });
 
-export const accountListAtom = atom<{ publicKey: string }[]>({
+export const accountListAtom = atom<AccountType[]>({
   key: 'accountList',
   default: [],
 });

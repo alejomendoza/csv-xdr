@@ -26,8 +26,6 @@ const Run = () => {
   const setProgress = useSetRecoilState(progressAtom);
   const resetProgress = useResetRecoilState(progressAtom);
 
-  const [invalidRows, setInvalidRows] = useState<{ row: number }[]>([]);
-
   const [
     { publicKey, amount, isTestnet, disabled: settingsDisabled },
     setSettings,
@@ -38,7 +36,6 @@ const Run = () => {
   const runGenerator = async (data: any) => {
     resetXdrList();
     resetProgress();
-    setInvalidRows([]);
 
     setSettings((oldState) => ({ ...oldState, disabled: true }));
     setProgress((oldState) => ({ ...oldState, status: 'loading' }));
@@ -46,12 +43,8 @@ const Run = () => {
     generator = generateXdr(publicKey, amount, data, isTestnet);
 
     try {
-      for await (let { xdr, amountComplete, isInvalid } of generator) {
+      for await (let { xdr, amountComplete } of generator) {
         if (xdr) setXdrList((oldState) => [...oldState, xdr!]);
-
-        if (isInvalid) {
-          setInvalidRows((oldState) => [...oldState, { row: amountComplete }]);
-        }
 
         setProgress((oldState) => ({
           ...oldState,
@@ -86,17 +79,6 @@ const Run = () => {
       </StyledButton>
 
       <Progress />
-
-      {invalidRows.length > 0 && (
-        <div>
-          <p>Invalid key found in row:</p>
-          <ul tw="flex flex-wrap gap-4">
-            {invalidRows.map(({ row }) => (
-              <li key={row}>{row}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
